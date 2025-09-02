@@ -1,0 +1,50 @@
+/* Import Tailwind directives */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Reference Tailwind stylesheet for @apply in custom classes (required for CSS modules, Svelte/Vue components, or global.css) */
+@reference "tailwindcss";
+
+/* Import Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+body {
+  @apply bg-gray-100 text-gray-800;
+  font-family: 'Inter', sans-serif;
+}
+
+/* Custom Button Styles */
+@layer components {
+  .btn-primary {
+    @apply bg-teal-600 hover:bg-teal-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200;
+  }
+
+  .btn-outline {
+    @apply border-2 border-teal-600 text-teal-600 hover:bg-teal-600 hover:text-white font-semibold py-2 px-4 rounded-lg transition-all duration-200;
+  }
+
+  .btn-sm {
+    @apply py-1 px-3 text-sm;
+  }
+
+  .btn-lg {
+    @apply py-3 px-6 text-lg;
+  }
+
+  .card {
+    @apply bg-white rounded-xl shadow-sm border border-gray-200 p-6;
+  }
+
+  .modal-backdrop {
+    @apply fixed inset-0 bg-black/50 z-40;
+  }
+
+  .modal-content {
+    @apply fixed inset-0 z-50 flex items-center justify-center p-4;
+  }
+
+  .hidden {
+    @apply hidden;
+  }
+}
