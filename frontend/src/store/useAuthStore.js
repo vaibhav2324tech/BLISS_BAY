@@ -2,7 +2,7 @@ import { create } from "zustand";
 import axios from "../api/axios";
 
 export const useAuthStore = create((set) => ({
-  user: JSON.parse(localStorage.getItem("user")) || null,
+  user: JSON.parse(localStorage.getItem("qr-restaurant-user")) || null,
   token: localStorage.getItem("token") || null,
 
   // Login
