@@ -15,6 +15,7 @@ export default function Cart() {
 
   const placeOrder = async () => {
     try {
+      console.log(tableNumber,"and",cart,"and" , grandTotal)
       const res = await axios.post("/orders", {
         tableNumber,
         items: cart.map((item) => ({
@@ -23,6 +24,8 @@ export default function Cart() {
         })),
         total: grandTotal,
       });
+
+
 
       if (res.data.success) {
         alert(`✅ Order placed for Table ${tableNumber}`);

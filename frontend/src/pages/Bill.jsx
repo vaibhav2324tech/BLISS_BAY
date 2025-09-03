@@ -18,6 +18,8 @@ export default function Bill() {
   const { currentTable } = useRestaurant();
   const { clearCart } = useCart();
 
+  console.log(orderId);
+
   useEffect(() => {
     if (!orderId) {
       navigate("/");
@@ -32,12 +34,9 @@ export default function Bill() {
           setOrder(res.data.data);
         } else {
           alert("Failed to fetch bill details.");
-          navigate("/");
         }
       } catch (err) {
         console.error("Bill fetch failed:", err);
-        alert("Error loading bill. Please try again.");
-        navigate("/");
       } finally {
         setLoading(false);
       }
@@ -66,15 +65,14 @@ export default function Bill() {
       });
 
       if (res.data.success) {
-        // Show success notification
-        const event = new CustomEvent('showToast', {
-          detail: { 
-            message: `Payment successful! Thank you for dining with us.`, 
-            type: 'success' 
+        const event = new CustomEvent("showToast", {
+          detail: {
+            message: `Payment successful! Thank you for dining with us.`,
+            type: "success"
           }
         });
         window.dispatchEvent(event);
-        
+
         clearCart();
         setTimeout(() => navigate("/"), 2000);
       } else {
@@ -91,11 +89,10 @@ export default function Bill() {
 
   const handleSplitBill = () => {
     setSplitBillOptions(true);
-    // Show success notification
-    const event = new CustomEvent('showToast', {
-      detail: { 
-        message: `Split bill request sent to staff. They will assist you shortly.`, 
-        type: 'info' 
+    const event = new CustomEvent("showToast", {
+      detail: {
+        message: `Split bill request sent to staff. They will assist you shortly.`,
+        type: "info"
       }
     });
     window.dispatchEvent(event);
@@ -120,34 +117,45 @@ export default function Bill() {
     return null;
   }
 
-  const subtotal = order.items?.reduce((sum, item) => 
-    sum + (item.menuItem?.price || 0) * item.quantity, 0) || 0;
+  const subtotal =
+    order.items?.reduce(
+      (sum, item) => sum + (item.price || 0) * item.quantity,
+      0
+    ) || 0;
   const serviceCharge = subtotal * 0.1;
   const gst = subtotal * 0.18;
   const discount = order.discount || 0;
   const grandTotal = subtotal + serviceCharge + gst - discount;
 
-  const currentTableInfo = currentTable || { 
-    id: tableNumber, 
-    name: `Table ${tableNumber}`, 
-    type: 'Indoor', 
-    seats: 4 
+  const currentTableInfo = currentTable || {
+    id: tableNumber || order.tableId,
+    name: `Table ${tableNumber || order.tableId}`,
+    type: "Indoor",
+    seats: 4
   };
 
   const getStatusColor = (status) => {
-    switch (status) {
-      case 'pending': return 'bg-yellow-100 text-yellow-800';
-      case 'preparing': return 'bg-blue-100 text-blue-800';
-      case 'ready': return 'bg-green-100 text-green-800';
-      case 'served': return 'bg-gray-100 text-gray-800';
-      default: return 'bg-gray-100 text-gray-800';
+    const normalized = status?.toLowerCase();
+    switch (normalized) {
+      case "pending":
+        return "bg-yellow-100 text-yellow-800";
+      case "preparing":
+        return "bg-blue-100 text-blue-800";
+      case "ready":
+        return "bg-green-100 text-green-800";
+      case "served":
+        return "bg-gray-100 text-gray-800";
+      case "paid":
+        return "bg-green-200 text-green-900";
+      default:
+        return "bg-gray-100 text-gray-800";
     }
   };
 
   const formatDateTime = (dateString) => {
-    return new Date(dateString).toLocaleString('en-IN', {
-      dateStyle: 'medium',
-      timeStyle: 'short'
+    return new Date(dateString).toLocaleString("en-IN", {
+      dateStyle: "medium",
+      timeStyle: "short"
     });
   };
 
@@ -173,12 +181,9 @@ export default function Bill() {
                 </p>
               </div>
             </div>
-            
+
             <div className="flex items-center space-x-2">
-              <button
-                onClick={handleSplitBill}
-                className="btn-outline btn-sm"
-              >
+              <button onClick={handleSplitBill} className="btn-outline btn-sm">
                 ✂️ Split Bill
               </button>
               <button
@@ -190,9 +195,9 @@ export default function Bill() {
               <button
                 onClick={() => setShowPaymentModal(true)}
                 className="btn-primary btn-sm"
-                disabled={order.status === 'paid'}
+                disabled={order.status === "paid"}
               >
-                💳 {order.status === 'paid' ? 'Paid' : 'Pay Now'}
+                💳 {order.status === "paid" ? "Paid" : "Pay Now"}
               </button>
             </div>
           </div>
@@ -206,17 +211,29 @@ export default function Bill() {
             <h1 className="text-2xl font-bold text-gray-900">🍽️ QR Restaurant</h1>
             <p className="text-gray-600">Digital Ordering & Billing System</p>
           </div>
-          
+
           <div className="flex justify-between text-sm text-gray-600">
             <div>
-              <p><strong>Bill No:</strong> #{order._id?.slice(-8)}</p>
-              <p><strong>Table:</strong> {order.tableNumber || tableNumber}</p>
-              <p><strong>Date:</strong> {formatDateTime(order.createdAt)}</p>
+              <p>
+                <strong>Bill No:</strong> #{order._id?.slice(-8)}
+              </p>
+              <p>
+                <strong>Table:</strong> {currentTableInfo.name}
+              </p>
+              <p>
+                <strong>Date:</strong> {formatDateTime(order.createdAt)}
+              </p>
             </div>
             <div className="text-right">
-              <p><strong>Status:</strong></p>
-              <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
-                {order.status?.toUpperCase() || 'PENDING'}
+              <p>
+                <strong>Status:</strong>
+              </p>
+              <span
+                className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                  order.status
+                )}`}
+              >
+                {order.status?.toUpperCase() || "PENDING"}
               </span>
             </div>
           </div>
@@ -224,29 +241,29 @@ export default function Bill() {
 
         {/* Order Items */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Order Details</h3>
-          
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            Order Details
+          </h3>
+
           <div className="space-y-3">
             {order.items?.map((item, idx) => (
-              <div key={idx} className="flex justify-between items-center py-3 border-b border-gray-100 last:border-b-0">
+              <div
+                key={idx}
+                className="flex justify-between items-center py-3 border-b border-gray-100 last:border-b-0"
+              >
                 <div className="flex-1">
                   <h4 className="font-medium text-gray-900">
-                    {item.menuItem?.name || 'Menu Item'}
+                    {item.name || "Menu Item"}
                   </h4>
                   <div className="flex items-center text-sm text-gray-600">
                     <span>Qty: {item.quantity}</span>
                     <span className="mx-2">•</span>
-                    <span>₹{item.menuItem?.price || 0} each</span>
+                    <span>₹{item.price || 0} each</span>
                   </div>
-                  {item.specialInstructions && (
-                    <p className="text-xs text-gray-500 italic mt-1">
-                      Note: {item.specialInstructions}
-                    </p>
-                  )}
                 </div>
                 <div className="text-right">
                   <p className="font-semibold text-gray-900">
-                    ₹{((item.menuItem?.price || 0) * item.quantity).toFixed(2)}
+                    ₹{((item.price || 0) * item.quantity).toFixed(2)}
                   </p>
                 </div>
               </div>
@@ -256,8 +273,10 @@ export default function Bill() {
 
         {/* Bill Summary */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Bill Summary</h3>
-          
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            Bill Summary
+          </h3>
+
           <div className="space-y-3">
             <div className="flex justify-between text-gray-700">
               <span>Food Subtotal</span>
@@ -285,7 +304,7 @@ export default function Bill() {
             </div>
           </div>
 
-          {order.status !== 'paid' && (
+          {order.status !== "paid" && (
             <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
               <button
                 onClick={() => setShowPaymentModal(true)}
@@ -302,16 +321,15 @@ export default function Bill() {
             </div>
           )}
 
-          {order.status === 'paid' && (
+          {order.status === "paid" && (
             <div className="mt-6 text-center">
               <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                 <p className="text-green-800 font-medium">✅ Payment Completed</p>
-                <p className="text-green-600 text-sm">Thank you for dining with us!</p>
+                <p className="text-green-600 text-sm">
+                  Thank you for dining with us!
+                </p>
               </div>
-              <button
-                onClick={() => navigate("/")}
-                className="btn-primary mt-4"
-              >
+              <button onClick={() => navigate("/")} className="btn-primary mt-4">
                 🏠 Back to Home
               </button>
             </div>
@@ -345,10 +363,10 @@ export default function Bill() {
               </label>
               <div className="space-y-2">
                 {[
-                  { id: 'cash', name: '💵 Cash Payment' },
-                  { id: 'card', name: '💳 Card Payment' },
-                  { id: 'upi', name: '📱 UPI Payment' },
-                  { id: 'wallet', name: '👛 Digital Wallet' }
+                  { id: "cash", name: "💵 Cash Payment" },
+                  { id: "card", name: "💳 Card Payment" },
+                  { id: "upi", name: "📱 UPI Payment" },
+                  { id: "wallet", name: "👛 Digital Wallet" }
                 ].map((method) => (
                   <label key={method.id} className="flex items-center">
                     <input
@@ -375,9 +393,11 @@ export default function Bill() {
               <button
                 onClick={handlePayment}
                 disabled={loading}
-                className={`btn-primary flex-1 ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                className={`btn-primary flex-1 ${
+                  loading ? "opacity-50 cursor-not-allowed" : ""
+                }`}
               >
-                {loading ? 'Processing...' : '✨ Process Payment'}
+                {loading ? "Processing..." : "✨ Process Payment"}
               </button>
             </div>
           </div>
