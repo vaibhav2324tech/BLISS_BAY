@@ -31,58 +31,94 @@ export default function KitchenDashboard() {
     };
   }, []);
 
-  const fetchKitchenOrders = async () => {
-    setLoading(true);
-    try {
-      const res = await axios.get("/orders", {
-        params: {
-          status: "pending,preparing,ready",
-          sortBy: "createdAt",
-          order: "asc"
-        }
-      });
+  // const fetchKitchenOrders = async () => {
+  //   setLoading(true);
+  //   try {
+  //     console.log("here")
+  //     const res = await axios.get("/orders/orders", {
+  //       // params: {
+  //       //   status: "pending,preparing,ready",
+  //       //   sortBy: "createdAt",
+  //       //   order: "asc"
+  //       // }
+  //     });
+  //     console.log(res.data.response)
       
-      if (res.data.success) {
-        setOrders(res.data.data);
-        updateStats(res.data.data);
-      } else {
-        // Demo data for development
-        const demoOrders = [
-          {
-            _id: "order1",
-            tableNumber: "T01",
-            status: "pending",
-            createdAt: new Date(),
-            items: [
-              { _id: "1", menuItem: { name: "Margherita Pizza" }, quantity: 2, section: "kitchen" },
-              { _id: "2", menuItem: { name: "Caesar Salad" }, quantity: 1, section: "cold" }
-            ]
-          },
-          {
-            _id: "order2", 
-            tableNumber: "T03",
-            status: "preparing",
-            createdAt: new Date(Date.now() - 10 * 60000),
-            items: [
-              { _id: "3", menuItem: { name: "Grilled Chicken" }, quantity: 1, section: "grill" }
-            ]
-          }
-        ];
-        setOrders(demoOrders);
-        updateStats(demoOrders);
-      }
-    } catch (error) {
-      console.error("Failed to fetch kitchen orders:", error);
+  //     if (res.data.success) {
+  //       setOrders(res.data.data);
+  //       updateStats(res.data.data);
+  //     } else {
+  //       // Demo data for development
+  //       const demoOrders = [
+  //         {
+  //           _id: "order1",
+  //           tableNumber: "T01",
+  //           status: "pending",
+  //           createdAt: new Date(),
+  //           items: [
+  //             { _id: "1", menuItem: { name: "Margherita Pizza" }, quantity: 2, section: "kitchen" },
+  //             { _id: "2", menuItem: { name: "Caesar Salad" }, quantity: 1, section: "cold" }
+  //           ]
+  //         },
+  //         {
+  //           _id: "order2", 
+  //           tableNumber: "T03",
+  //           status: "preparing",
+  //           createdAt: new Date(Date.now() - 10 * 60000),
+  //           items: [
+  //             { _id: "3", menuItem: { name: "Grilled Chicken" }, quantity: 1, section: "grill" }
+  //           ]
+  //         }
+  //       ];
+  //       setOrders(demoOrders);
+  //       updateStats(demoOrders);
+  //     }
+  //   } catch (error) {
+  //     console.error("Failed to fetch kitchen orders:", error);
+  //     setOrders([]);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
+
+  const fetchKitchenOrders = async () => {
+  setLoading(true);
+  try {
+    const res = await axios.get("/orders/orders");
+
+    if (res.data.response) {
+      // Map response to the format your UI expects
+      const formattedOrders = res.data.response.map(order => ({
+        ...order,
+        tableNumber: order.tableId.tableNumber || "N/A", // adapt if you want table numbers
+        status: order.status, // convert "PENDING" → "pending"
+        items: order.items.map(item => ({
+          _id: item._id,
+          menuItem: { name: item.name },
+          quantity: item.quantity,
+          section: "kitchen" // or assign dynamically if your backend provides it
+        }))
+      }));
+
+      setOrders(formattedOrders);
+      updateStats(formattedOrders);
+    } else {
       setOrders([]);
-    } finally {
-      setLoading(false);
     }
-  };
+  } catch (error) {
+    console.error("Failed to fetch kitchen orders:", error);
+    setOrders([]);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   const updateStats = (orderList) => {
-    const pending = orderList.filter(o => o.status === "pending").length;
-    const preparing = orderList.filter(o => o.status === "preparing").length;
-    const ready = orderList.filter(o => o.status === "ready").length;
+    const pending = orderList.filter(o => o.status === "PENDING").length;
+    const preparing = orderList.filter(o => o.status === "PREPARING").length;
+    const ready = orderList.filter(o => o.status === "READY").length;
     
     setStats({ pending, preparing, ready, avgPrepTime: 15 });
   };
@@ -102,7 +138,7 @@ export default function KitchenDashboard() {
 
   const updateOrderStatus = async (orderId, newStatus) => {
     try {
-      const res = await axios.patch(`/orders/${orderId}`, { status: newStatus });
+      const res = await axios.put(`/orders/${orderId}/status`, { status: newStatus });
       
       if (res.data.success) {
         setOrders(prev => prev.map(o => 
@@ -122,10 +158,10 @@ export default function KitchenDashboard() {
       }
     } catch (error) {
       console.error("Failed to update order:", error);
-      const event = new CustomEvent('showToast', {
-        detail: { message: "Failed to update order status", type: 'error' }
-      });
-      window.dispatchEvent(event);
+      // const event = new CustomEvent('showToast', {
+      //   detail: { message: "Failed to update order status", type: 'error' }
+      // });
+      // window.dispatchEvent(event);
     }
   };
 
@@ -314,25 +350,25 @@ export default function KitchenDashboard() {
 
                     {/* Action Buttons */}
                     <div className="flex space-x-2">
-                      {order.status === 'pending' && (
+                      {order.status === 'PENDING' && (
                         <button
-                          onClick={() => updateOrderStatus(order._id, 'preparing')}
+                          onClick={() => updateOrderStatus(order._id, 'PREPARING')}
                           className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 px-3 rounded-lg transition-colors"
                         >
                           🍳 Start Preparing
                         </button>
                       )}
-                      {order.status === 'preparing' && (
+                      {order.status === 'PREPARING' && (
                         <button
-                          onClick={() => updateOrderStatus(order._id, 'ready')}
+                          onClick={() => updateOrderStatus(order._id, 'READY')}
                           className="flex-1 bg-green-600 hover:bg-green-700 text-white text-sm font-medium py-2 px-3 rounded-lg transition-colors"
                         >
                           ✅ Mark Ready
                         </button>
                       )}
-                      {order.status === 'ready' && (
+                      {order.status === 'READY' && (
                         <button
-                          onClick={() => updateOrderStatus(order._id, 'completed')}
+                          onClick={() => updateOrderStatus(order._id, 'SERVED')}
                           className="flex-1 bg-gray-600 hover:bg-gray-700 text-white text-sm font-medium py-2 px-3 rounded-lg transition-colors"
                         >
                           🚀 Complete
