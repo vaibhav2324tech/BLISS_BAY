@@ -79,7 +79,7 @@ router.post("/", async (req, res) => {
  * 📌 Update order status (Kitchen / Waiter / Cashier)
  * PUT /api/orders/:id/status
  */
-router.put("/:id/status", authenticateToken, authorize("kitchen", "waiter", "cashier", "admin"), async (req, res) => {
+router.put("/:id/status", async (req, res) => {
   try {
     const { status } = req.body;
 
@@ -91,7 +91,7 @@ router.put("/:id/status", authenticateToken, authorize("kitchen", "waiter", "cas
       req.params.id,
       { status },
       { new: true }
-    ).populate("table", "tableNumber");
+    ).populate("tableId", "tableNumber");
 
     if (!order) {
       return res.status(404).json({ success: false, message: "Order not found" });
@@ -113,7 +113,21 @@ router.put("/:id/status", authenticateToken, authorize("kitchen", "waiter", "cas
  * 📌 Get all orders (Admin / Manager)
  */
 // router.get("/", authenticateToken, authorize("admin", "superadmin", "manager"), async (req, res) => {
-router.get("/:id", async (req, res) => {
+
+
+  router.get("/orders",async(req,res)=>{
+    try {
+      const response = await Order.find()
+      .populate("tableId", "tableNumber");
+
+      res.status(200).json({response:response})
+    } catch (error) {
+      console.log("Error fetching order",error)
+      res.status(500) 
+    }
+  })
+
+  router.get("/:id", async (req, res) => {
   try {
 
     console.log(req.params.id)

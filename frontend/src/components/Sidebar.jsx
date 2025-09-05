@@ -3,6 +3,7 @@ import { useAuthStore } from "../store/useAuthStore";
 
 export default function Sidebar() {
   const { user, logout } = useAuthStore();
+  // console.log(user)
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -18,6 +19,7 @@ export default function Sidebar() {
         <Link to="/" className="block hover:bg-gray-700 p-2 rounded">
           🏠 Landing
         </Link>
+        
 
         {user?.role === "guest" && (
           <>
@@ -58,9 +60,14 @@ export default function Sidebar() {
         )}
 
         {user?.role === "admin" && (
+          <>
           <Link to="/admin" className="block hover:bg-gray-700 p-2 rounded">
             📊 Admin Dashboard
           </Link>
+          <Link to="/admin/orders" className="block hover:bg-gray-700 p-2 rounded">
+            📊 Orders
+          </Link>
+          </>
         )}
 
         {user?.role === "superadmin" && (
