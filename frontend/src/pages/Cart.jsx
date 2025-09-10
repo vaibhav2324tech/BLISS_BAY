@@ -1,12 +1,15 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import axios from "../api/axios";
+import { useCart } from "../contexts/CartContext";
+
 
 export default function Cart() {
   const location = useLocation();
   const navigate = useNavigate();
   const [cart, setCart] = useState(location.state?.cart || []);
   const tableNumber = location.state?.tableNumber || "unknown";
+  const {clearCart} = useCart();
 
   const total = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
   const gst = total * 0.18;
@@ -29,6 +32,8 @@ export default function Cart() {
 
       if (res.data.success) {
         alert(`✅ Order placed for Table ${tableNumber}`);
+        localStorage.setItem("orderId",res.data.data._id);
+        clearCart();  
         navigate("/bill", { state: { orderId: res.data.data._id, tableNumber } });
       }
     } catch (err) {

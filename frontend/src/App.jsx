@@ -21,6 +21,10 @@ import PaymentModal from "./components/PaymentModal";
 // Hooks
 import { useAuth } from "./contexts/AuthContext";
 import { useRestaurant } from "./contexts/RestaurantContext";
+import AdminHome from "./pages/AdminPages/AdminHome";
+import AddTables from "./pages/AdminPages/AddTables";
+import Orders from "./pages/AdminPages/Orders";
+import TablesFetch from "./pages/AdminPages/TablesFetch";
 
 export default function App() {
   const { loading } = useAuth();
@@ -92,7 +96,12 @@ export default function App() {
               <AdminDashboard />
             </ProtectedRoute>
           }
-        />
+        >
+          <Route index element={<AdminHome />} />
+          <Route path="orders" element={<Orders/>} />
+          <Route path="get-all-tables" element={<TablesFetch/>} />
+          <Route path="add-tables" element={<AddTables />} />
+        </Route>
 
         {/* SuperAdmin Dashboard */}
         <Route

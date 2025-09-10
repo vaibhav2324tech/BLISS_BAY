@@ -57,7 +57,7 @@ export default function LandingPage() {
     // Set current table in context
     setCurrentTable(table);
     // Clear any existing cart data
-    clearCart();
+    // clearCart();
     
     // Navigate to menu with table context
     navigate(`/menu?table=${selectedTable}`);

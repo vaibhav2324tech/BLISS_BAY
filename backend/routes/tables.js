@@ -2,6 +2,7 @@ import express from 'express';
 import QRCode from 'qrcode';
 import Table from '../models/Table.js';
 import { authenticateToken, authorize } from '../middleware/auth.js';
+// import Table from '../models/Table.js';
 
 const router = express.Router();
 
@@ -43,7 +44,7 @@ router.get(
 );
 
 /* ========= GET ALL TABLES ========= */
-router.get('/', authenticateToken, async (req, res) => {
+router.get('/', async (req, res) => {
   try {
     const tables = await Table.find()
       .populate('assignedWaiter', 'username firstName lastName')
@@ -80,35 +81,78 @@ router.get('/:id', authenticateToken, async (req, res) => {
 });
 
 /* ========= CREATE TABLE ========= */
-router.post(
-  '/',
-  authenticateToken,
-  authorize('superadmin', 'admin', 'manager'),
-  async (req, res) => {
-    try {
-      const table = new Table(req.body);
-      const baseUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-      table.qrCode = await generateTableQR(table.tableNumber, baseUrl);
+// router.post(
+//   '/',
+//   // authenticateToken,
+//   // authorize('superadmin', 'admin', 'manager'),
+//   async (req, res) => {
+//     try {
+//       console.log("here")
+//       console.log(req.body);
 
-      await table.save();
+//       if (!req.body.assignedWaiter) {
+//     req.body.assignedWaiter = null;
+//       }
 
-      // Notify admins
-      if (req.io) req.io.to('admin').emit('table-created', table);
+//       if (!req.body.currentOrder) {
+//       req.body.currentOrder = null;
+//     }
 
-      res.status(201).json({
-        success: true,
-        message: 'Table created successfully',
-        data: table
-      });
-    } catch (error) {
-      res.status(400).json({
-        success: false,
-        message: 'Error creating table',
-        error: error.message
-      });
+//       const table = new Table(req.body);
+//       // const baseUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+//       // table.qrCode = await generateTableQR(table.tableNumber, baseUrl);
+
+//       await table.save();
+
+//       // Notify admins
+//       if (req.io) req.io.to('admin').emit('table-created', table);
+
+//       res.status(201).json({
+//         success: true,
+//         message: 'Table created successfully',
+//         data: table
+//       });
+//     } catch (error) {
+//       res.status(400).json({
+//         success: false,
+//         message: 'Error creating table',
+//         error: error.message
+//       });
+//     }
+//   }
+// );
+
+
+router.post('/', async (req, res) => {
+  try {
+    // console.log("Incoming body:", req.body);
+    if (!req.body.assignedWaiter) {
+      req.body.assignedWaiter = null;
     }
+    if (!req.body.currentOrder) {
+      req.body.currentOrder = null;
+    }
+
+    const table = new Table(req.body);
+    await table.save();
+
+    if (req.io) req.io.to('admin').emit('table-created', table);
+
+    res.status(201).json({
+      success: true,
+      message: 'Table created successfully',
+      data: table
+    });
+  } catch (error) {
+    console.error("Error creating table:", error);
+    res.status(400).json({
+      success: false,
+      message: 'Error creating table',
+      error: error.message
+    });
   }
-);
+});
+
 
 /* ========= UPDATE TABLE ========= */
 router.put('/:id', authenticateToken, authorize('superadmin', 'admin', 'manager'), async (req, res) => {
