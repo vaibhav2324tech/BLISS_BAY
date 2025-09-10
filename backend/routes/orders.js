@@ -58,10 +58,11 @@ router.post("/", async (req, res) => {
     await order.save();
 
     // Update table's current order
-    // await Table.findByIdAndUpdate(tableId, { currentOrder: order._id, status: "occupied" });
+    console.log(tableId)
+    await Table.findByIdAndUpdate(table._id, { currentOrder: order._id, status: "occupied" });
 
     // 🔴 Emit to all staff dashboards
-    // req.io.to("kitchen").emit("order:new", order);
+    req.io.to("kitchen").emit("order:new", order);
     // req.io.to("waiter").emit("order:new", order);
     // req.io.to("cashier").emit("order:new", order);
     // req.io.to("admin").emit("order:new", order);

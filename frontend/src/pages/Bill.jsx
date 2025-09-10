@@ -8,7 +8,11 @@ import socket from "../utils/socket";
 export default function Bill() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { orderId, tableNumber } = location.state || {};
+  console.log(localStorage.getItem("orderId"))
+  let { orderId, tableNumber } = location.state || {};
+  if(!orderId){
+    orderId = localStorage.getItem("orderId")
+  }
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
@@ -192,13 +196,13 @@ export default function Bill() {
               >
                 🖨️ Print
               </button>
-              <button
+              {/* <button
                 onClick={() => setShowPaymentModal(true)}
                 className="btn-primary btn-sm"
                 disabled={order.status === "paid"}
               >
                 💳 {order.status === "paid" ? "Paid" : "Pay Now"}
-              </button>
+              </button> */}
             </div>
           </div>
         </div>
@@ -306,11 +310,17 @@ export default function Bill() {
 
           {order.status !== "paid" && (
             <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <button
+              {/* <button
                 onClick={() => setShowPaymentModal(true)}
                 className="btn-primary w-full"
               >
                 💳 Process Payment
+              </button> */}
+              <button
+                // onClick={() => setShowPaymentModal(true)}
+                className="btn-primary w-full"
+              >
+                💳 Call Manager to pay
               </button>
               <button
                 onClick={() => navigate("/menu")}

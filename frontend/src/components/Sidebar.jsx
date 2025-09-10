@@ -3,7 +3,6 @@ import { useAuthStore } from "../store/useAuthStore";
 
 export default function Sidebar() {
   const { user, logout } = useAuthStore();
-  // console.log(user)
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -12,14 +11,13 @@ export default function Sidebar() {
   };
 
   return (
-    <div className="w-60 bg-gray-800 text-white min-h-screen p-4">
+    <div className="fixed top-0 left-0 w-60 h-screen bg-gray-800 text-white p-4">
       <h2 className="text-lg font-bold mb-6">🍽 Bliss Bay</h2>
 
       <nav className="space-y-2">
         <Link to="/" className="block hover:bg-gray-700 p-2 rounded">
           🏠 Landing
         </Link>
-        
 
         {user?.role === "guest" && (
           <>
@@ -61,20 +59,23 @@ export default function Sidebar() {
 
         {user?.role === "admin" && (
           <>
-          <Link to="/admin" className="block hover:bg-gray-700 p-2 rounded">
-            📊 Admin Dashboard
-          </Link>
-          <Link to="/admin/orders" className="block hover:bg-gray-700 p-2 rounded">
-            📊 Orders
-          </Link>
+            <Link to="/admin" className="block hover:bg-gray-700 p-2 rounded">
+              📊 Admin Dashboard
+            </Link>
+            <Link to="/admin/orders" className="block hover:bg-gray-700 p-2 rounded">
+              📦 Orders
+            </Link>
+            <Link to="/admin/get-all-tables" className="block hover:bg-gray-700 p-2 rounded">
+              📦 Orders
+            </Link>
+            <Link to="/admin/add-tables" className="block hover:bg-gray-700 p-2 rounded">
+              🪑 Add Tables
+            </Link>
           </>
         )}
 
         {user?.role === "superadmin" && (
-          <Link
-            to="/superadmin"
-            className="block hover:bg-gray-700 p-2 rounded"
-          >
+          <Link to="/superadmin" className="block hover:bg-gray-700 p-2 rounded">
             👑 SuperAdmin Dashboard
           </Link>
         )}
